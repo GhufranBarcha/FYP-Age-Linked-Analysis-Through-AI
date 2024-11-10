@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import { useForm } from "react-hook-form";
 import { db } from "../../../auth/config"; // Adjust the path according to your project structure
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, getDocs } from "firebase/firestore";
 import toast from "react-hot-toast"; // Import toast
 
 const FormThree = ({ setId }) => {
@@ -13,21 +13,42 @@ const FormThree = ({ setId }) => {
 
   const onSubmit = async (data) => {
     try {
-      // Add userId to the data
       const userId = localStorage.getItem("userId");
-      const childData = {
-        ...data,
-        userId, // Assuming userId is passed as a prop
-      };
 
-      // Add a new document to the 'children' collection in Firestore
-      await addDoc(collection(db, "children"), childData);
-      console.log("Child data added:", childData);
+      const userAudioCollectionRef = collection(db, "userAudio");
 
-      // Show success toast
-      toast.success("Child data added successfully!");
-      // Proceed to next form step
-      setId(4);
+      const querySnapshot = await getDocs(userAudioCollectionRef);
+
+      let userAudioData = null;
+      let audioId = null;
+      querySnapshot.forEach((doc) => {
+        userAudioData = doc.data();
+        audioId = doc.id;
+      });
+
+      if (userAudioData) {
+        const confidence = userAudioData.confidence;
+        const predictedAge = userAudioData.predicted_age;
+
+        const childData = {
+          ...data,
+          userId,
+          confidence,
+          predictedAge,
+          audioId,
+        };
+
+        await addDoc(collection(db, "children"), childData);
+        console.log("Child data added:", childData);
+
+        // Show success toast
+        toast.success("Child data added successfully!");
+
+        // Proceed to next form step
+        setId(4); // Assuming setId is defined elsewhere to manage form step
+      } else {
+        throw new Error("No audio data found");
+      }
     } catch (error) {
       console.error("Error adding child data:", error);
       // Show error toast

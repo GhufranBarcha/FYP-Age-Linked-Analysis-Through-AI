@@ -20,45 +20,18 @@ const ViewReports = () => {
     try {
       const userId = localStorage.getItem("userId");
 
-      // Fetch children data
       const childrenQuery = query(
         collection(db, "children"),
         where("userId", "==", userId)
       );
       const childrenSnapshot = await getDocs(childrenQuery);
-      const childrenData = childrenSnapshot?.docs?.map((doc) => ({
+      const childrenData = childrenSnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
+      console.log(childrenData);
 
-      // Fetch user audio data
-      const audioQuery = query(
-        collection(db, "userAudio"),
-        where("userId", "==", userId)
-      );
-      const audioSnapshot = await getDocs(audioQuery);
-      const audioData = audioSnapshot?.docs?.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-
-      // Merge predicted_age and confidence into childrenData
-      const mergedData = childrenData.map((child) => {
-        // Find the corresponding audio record for the child
-        const audioRecord = audioData.find(
-          (audio) => audio.userId === child.userId
-        );
-        return {
-          ...child,
-          predicted_age: audioRecord ? audioRecord.predicted_age : null,
-          confidence: audioRecord ? audioRecord.confidence : null,
-        };
-      });
-
-      // Set merged data
-      if (mergedData) {
-        setChildrenData(mergedData);
-      }
+      setChildrenData(childrenData);
     } catch (error) {
       console.error("Error fetching children data:", error);
       toast.error("Error fetching children data. Please try again.");
@@ -67,6 +40,7 @@ const ViewReports = () => {
 
   useEffect(() => {
     fetchChildrenData();
+    console.log(childrenData);
   }, []);
   const getAgeRange = (predictedAge) => {
     switch (predictedAge) {
@@ -82,6 +56,7 @@ const ViewReports = () => {
         return "Unknown"; // Return a default value if the age doesn't match any case
     }
   };
+  console.log(childrenData);
   return (
     <div>
       <Toaster />
@@ -103,7 +78,7 @@ const ViewReports = () => {
               <TableBody>
                 {childrenData?.map((row) => (
                   <TableRow
-                    key={row.childName}
+                    key={row.id}
                     sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
                     <TableCell component="th" scope="row">
                       {row?.childName}
@@ -111,9 +86,9 @@ const ViewReports = () => {
                     <TableCell align="center">{row?.childAge}</TableCell>
                     <TableCell align="center">{row?.dob}</TableCell>
                     <TableCell align="center">{row?.testDate}</TableCell>
-                    <TableCell align="center">{row?.predicted_age}</TableCell>
+                    <TableCell align="center">{row?.predictedAge}</TableCell>
                     <TableCell align="center">
-                      {getAgeRange(row?.predicted_age)}
+                      {getAgeRange(row?.predictedAge)}
                     </TableCell>
                   </TableRow>
                 ))}

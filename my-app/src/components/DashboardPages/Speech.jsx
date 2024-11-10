@@ -56,6 +56,7 @@ const Speech = () => {
 
         // Handle prediction response
         if (response.data) {
+          console.log(response.data);
           const predictionData = response.data;
 
           // Extract user ID from local storage
