@@ -43,10 +43,10 @@ const Header = () => {
         <nav
           className={`flex px-4 justify-between w-[100%]   items-center py-5  `}>
           <div>
-            <a href="section1" className="hidden xl:flex">
+            <a href="/" className="hidden xl:flex">
               <img src={Logo} className=" h-[80px] " alt="" />
             </a>
-            <div href="section1" className="flex xl:hidden">
+            <div href="/" className="flex xl:hidden">
               <img src={Logo} className=" h-[32px] " alt="LOGO" />
             </div>
           </div>
