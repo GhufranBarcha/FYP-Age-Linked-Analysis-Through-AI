@@ -30,20 +30,23 @@ const Speech = () => {
     try {
       let file;
       if (uploadedFiles.length > 0) {
+        // Use the uploaded file directly if available
         file = uploadedFiles[0];
       } else if (audioUrl) {
+        // Fetch the audio blob from the recorded audio URL
         const response = await fetch(audioUrl);
         const blob = await response.blob();
-        file = new File([blob], `recording-${uuidv4()}.wav`, {
-          type: blob.type,
-        });
+  
+        // Convert blob to a .wav file
+        file = new File([blob], `recording-${uuidv4()}.wav`, { type: "audio/wav" });
       }
-
+  
       if (file) {
+        // Append file to FormData for uploading
         const formData = new FormData();
         formData.append("file", file);
-
-        // Send the audio file for prediction
+  
+        // Send the audio file to the backend
         const response = await axios.post(
           "http://127.0.0.1:5000/predict",
           formData,
@@ -53,37 +56,36 @@ const Speech = () => {
             },
           }
         );
-
-        // Handle prediction response
+  
+        // Handle backend response
         if (response.data) {
           console.log(response.data);
           const predictionData = response.data;
-
-          // Extract user ID from local storage
+  
+          // Save audio metadata to Firebase
           const userId = localStorage.getItem("userId");
           if (!userId) {
             console.error("User ID not found in local storage.");
             return;
           }
-
-          // Prepare unique file name and upload to Firebase Storage
+  
           const uniqueFileName = `${userId}-${uuidv4()}-${file.name}`;
           const storageRef = ref(storage, `userAudio/${uniqueFileName}`);
           const snapshot = await uploadBytes(storageRef, file);
           const downloadURL = await getDownloadURL(snapshot.ref);
-
-          // Store audio metadata and prediction data in Firestore
+  
+          // Store data in Firestore
           await setDoc(doc(db, "userAudio", uniqueFileName), {
             userId: userId,
             audioUrl: downloadURL,
             fileName: file.name,
             uploadedAt: new Date(),
-            predicted_age: predictionData.predicted_age, // Assuming response data includes these fields
+            predicted_age: predictionData.predicted_age,
             confidence: predictionData.confidence,
           });
           toast.dismiss(loadingToast);
           toast.success("Audio uploaded and data saved successfully!");
-          setId(3); // Move to the next step after uploading
+          setId(3);
         }
       }
     } catch (error) {
