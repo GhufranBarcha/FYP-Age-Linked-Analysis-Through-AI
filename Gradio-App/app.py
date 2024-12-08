@@ -191,8 +191,8 @@ with gr.Blocks(css="""
     }
 """) as demo:
     gr.Markdown("""
-    <div align="center">
-    <h1>SONIC PINNACLE<br>Advancing Age-Linked Speech Analysis through AI</h1>
+    <div style="display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 20px;">
+        <h1>SONIC PINNACLE<br>Advancing Age-Linked Speech Analysis through AI</h1>
     </div>
     """, elem_id="title")
     
